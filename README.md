@@ -7,3 +7,5 @@ To launch run:
 
 navigate to project folder,
 >python ./app.py
+
+map html has evgeny's apikey - don't share it
