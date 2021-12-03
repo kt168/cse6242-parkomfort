@@ -131,3 +131,5 @@ dmypy.json
 
 
 # csv raw datafiles
+
+.DS_Store
