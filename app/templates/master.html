@@ -20,7 +20,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        {#    <a class="navbar-brand" href="/">Home</a>#}
+        <a class="navbar-brand" href="#">ParKomfort</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -28,8 +28,11 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    <a class="nav-link active" aria-current="page" href="/index">Home</a>
 
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/search">Search</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="">Github</a>
@@ -39,74 +42,100 @@
     </div>
 </nav>
 
-
-<div class="jumbotron">
-    <div class="container">
-        <h2 class="text-center">Parkcomfort</h2>
-        {% block message %}
-        {% endblock %}
-    </div>
-</div>
-<br>
-<br>
-<div class="container col-lg-12">
+<div class="container col-lg-12 mt-2">
     {% block content %}
-    {% endblock %}
-    <div class="page-header">
-        <h2 class="text-center">Precinct-Level Vehicle Larceny</h2>
-    </div>
-
-    <div class="row pt-2">
-        <div class="col-lg-6">
-            <div id="larceny"></div>
+        <div class="page-header">
+            <h3 class="text-center">Precinct-Level Vehicle Larceny</h3>
         </div>
-        <div class="col-lg-6 mt-5">
-            <div class="precinct-stats"><h4>Stats</h4></div>
-            <form method="POST">
-                <label>Selected Precinct:</label>
-                <input id="precinctcode-larceny" name="precinctcode_larceny">
-                <input type="submit">
-            </form>
-            <div>place holder
-                <p>{{ precinctcode_larceny }}</p>
-                <div id="larceny_pct" class="violation-graphs"></div>
+
+        <div class="row justify-content-end mt-5">
+            <div class="col-lg-6">
+                <div class="precinct-stats"><h5>Monthly Fluctuations</h5></div>
+
+                <form class="form-inline" method="POST">
+                    <div class="form-group mb-2">
+                        <label class="sr-only">Selected Precinct:</label>
+                    </div>
+                    <div class="form-group col-auto mb-2">
+                        <input id="precinctcode-larceny" name="precinctcode_larceny" class="form-control"
+                               type="text"
+                               placeholder="Click on Map to Select Precinct" readonly>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-outline-secondary mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+                            </svg>
+                            <span class="visually-hidden">Button</span>
+                        </button>
+                    </div>
+                </form>
+
             </div>
         </div>
-    </div>
 
-    <div class="page-header">
-        <h2 class="text-center">Precinct-Level Parking Violation</h2>
-    </div>
-
-    <div class="row justify-content-center">
-        <div class="col-4 text-end my-auto">
-            <label for="yearselector">Select Parking Violation Data for Year: </label>
+        <div class="row">
+            <div class="col-lg-6">
+                <div id="larceny"></div>
+            </div>
+            <div class="col-lg-6">
+                <div id="larceny_pct"></div>
+            </div>
         </div>
-        <div class="col-4">
-            <select id="yearselector" class="form-select">
-                <option selected value="violation-20">2020</option>
-                <option value="violation-21">2021</option>
-            </select>
+
+        <div class="page-header">
+            <h3 class="text-center">Precinct-Level Parking Violation</h3>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div id="violations" class="violation-graphs"></div>
+        <div class="row justify-content-between mt-5">
+            <div class="col-2 text-start my-auto">
+                <label><h5>Select Fiscal Year: </h5></label>
+                <select id="yearselector" class="form-select">
+                    <option selected value="violation-20">2020</option>
+                    <option value="violation-21">2021</option>
+                </select>
+
+
+            </div>
+            <div class="col-6">
+                <div class="precinct-stats"><h5>Year-on-Year Change</h5></div>
+
+                <form class="form-inline" method="POST">
+                    <div class="form-group mb-2">
+                        <label class="sr-only">Selected Precinct:</label>
+                    </div>
+                    <div class="form-group col-auto mb-2">
+                        <input id="precinctcode-violation" name="precinctcode_violation" class="form-control"
+                               type="text"
+                               placeholder="Click on Map to Select Precinct" readonly>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-outline-secondary mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+                            </svg>
+                            <span class="visually-hidden">Button</span>
+                        </button>
+                    </div>
+                </form>
+
+
+            </div>
         </div>
-        <div class="col-lg-6 mt-5">
-            <div class="precinct-stats"><h4>Stats</h4></div>
-            <form method="POST">
-                <label>Selected Precinct:</label>
-                <input id="precinctcode-violation" name="precinctcode">
-                <input type="submit">
-            </form>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div id="violations" class="violation-graphs"></div>
+            </div>
+            <div class="col-lg-6">
+                <div id="violations_pct" class="violation-graphs"></div>
+            </div>
+
         </div>
-    </div>
-
-
-</div>
-
+        </div>
+    {% endblock %}
 <script type="text/javascript">
 
     const graph_larceny = {{graphJSON_larceny | safe}};
@@ -133,6 +162,11 @@
     const graphJSON_larceny_pct = {{ graphJSON_larceny_pct | safe }};
     if (graphJSON_larceny_pct) {
         Plotly.react("larceny_pct", graphJSON_larceny_pct.data, graphJSON_larceny_pct.layout)
+    }
+
+    const graphJSON_violation_pct = {{ graphJSON_violation_pct | safe }};
+    if (graphJSON_violation_pct) {
+        Plotly.react("violations_pct", graphJSON_violation_pct.data, graphJSON_violation_pct.layout)
     }
 
     $(function () {
