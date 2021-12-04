@@ -272,24 +272,26 @@ def go():
     full_path = os.path.join(script_dir, '../data/meter_pct_risk.csv')
     df = load_meters(full_path)
 
-    if request_type_str == 'GET':
-        fig_onload = px.scatter_mapbox(lat=[40.7],
-                                       lon=[-74.0],
-                                       zoom=9,
-                                       opacity=0)
+    fig_onload = px.scatter_mapbox(lat=[40.7],
+                                   lon=[-74.0],
+                                   zoom=9,
+                                   opacity=0)
 
-        fig_onload.update_layout(
-            autosize=False,
-            width=700,
-            height=700,
-        )
-        graph_onload = json.dumps(fig_onload, cls=plotly.utils.PlotlyJSONEncoder)
+    fig_onload.update_layout(
+        autosize=False,
+        width=700,
+        height=700,
+    )
+    graph_onload = json.dumps(fig_onload, cls=plotly.utils.PlotlyJSONEncoder)
+
+    if request_type_str == 'GET':
         return render_template(
             'search.html',
             graph_onload=graph_onload,
             search_addr='null',
             risk_level='null',
-            radius_miles='null'
+            radius_miles='null',
+            search_result='null'
         )
 
     if request_type_str == 'POST':
@@ -369,10 +371,18 @@ def go():
                 graph_closest=graph_closest,
                 search_addr=search_addr,
                 risk_level=risk_level,
-                radius_miles=radius_miles
+                radius_miles=radius_miles,
+                search_result='success'
             )
         else:
-
+            return render_template(
+                'search.html',
+                graph_onload=graph_onload,
+                search_addr=search_addr,
+                risk_level=risk_level,
+                radius_miles=radius_miles,
+                search_result = 'No satisfying result found!'
+            )
 
 
 
