@@ -131,3 +131,6 @@ dmypy.json
 
 
 # csv raw datafiles
+
+.DS_Store
+.mapbox_token
