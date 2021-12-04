@@ -31,7 +31,6 @@ violation_by_pct_21_df = pd.read_csv(violation_by_pct_21_filename)
 violation_by_pct_df = violation_by_pct_20_df.copy()
 violation_by_pct_df.loc[:, 'sum'] = violation_by_pct_df.loc[:, 'sum'] + violation_by_pct_21_df.loc[:, 'sum']
 
-
 # index webpage displays visuals and receives user input text for model
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -269,7 +268,7 @@ def go():
     mapbox_access_token = open(token_path).read()
     px.set_mapbox_access_token(open(token_path).read())
 
-    full_path = os.path.join(script_dir, '../data/nyc_meter_with_addr.csv')
+    full_path = os.path.join(script_dir, '../data/meter_pct_risk.csv')
     df = load_meters(full_path)
 
     if request_type_str == 'GET':
@@ -298,7 +297,7 @@ def go():
         # lat, lon = floats_string_to_arr(lat_lon)
         # lat, lon = 40.730948, -73.993291
 
-        nearby = find_nearby(df, lat, lon, convert_radius(500))
+        nearby = find_nearby(df, lat, lon, convert_radius(100000))
         closest = find_closest(nearby, lat, lon)
 
 
@@ -374,12 +373,12 @@ def calculate_distance(row, lat, lon):
     return math.sqrt(lat ** 2 + lon ** 2)
 
 
-def find_nearby(df, lat, lon, radius, exclude=[]):
+def find_nearby(df, lat, lon, radius, exclude=1):
     left = lon - radius
     right = lon + radius
     down = lat - radius
     up = lat + radius
-    df = df[(df.LONG > left) & (df.LONG < right) & (df.LAT < up) & (df.LAT > down)]
+    df = df[(df.LONG > left) & (df.LONG < right) & (df.LAT < up) & (df.LAT > down) & (df.risk_factor<=exclude)]
     return df
 
 
