@@ -31,6 +31,7 @@ violation_by_pct_21_df = pd.read_csv(violation_by_pct_21_filename)
 violation_by_pct_df = violation_by_pct_20_df.copy()
 violation_by_pct_df.loc[:, 'sum'] = violation_by_pct_df.loc[:, 'sum'] + violation_by_pct_21_df.loc[:, 'sum']
 
+
 # index webpage displays visuals and receives user input text for model
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -235,11 +236,11 @@ def index():
             precinctcode_violation = request.form['precinctcode_violation']
             violation_yr = [2020, 2021]
             violation_2020 = \
-            violation_by_pct_20_df[violation_by_pct_20_df["Violation Precinct"] == int(precinctcode_violation)][
-                'sum'].values[0]
+                violation_by_pct_20_df[violation_by_pct_20_df["Violation Precinct"] == int(precinctcode_violation)][
+                    'sum'].values[0]
             violation_2021 = \
-            violation_by_pct_21_df[violation_by_pct_21_df["Violation Precinct"] == int(precinctcode_violation)][
-                'sum'].values[0]
+                violation_by_pct_21_df[violation_by_pct_21_df["Violation Precinct"] == int(precinctcode_violation)][
+                    'sum'].values[0]
             violation_ct = [violation_2020, violation_2021]
             violation_df = pd.DataFrame(list(zip(violation_yr, violation_ct)), columns=['Fiscal Year', 'Count'])
 
@@ -276,20 +277,32 @@ def go():
                                        lon=[-74.0],
                                        zoom=9,
                                        opacity=0)
+
+        fig_onload.update_layout(
+            autosize=False,
+            width=700,
+            height=700,
+        )
         graph_onload = json.dumps(fig_onload, cls=plotly.utils.PlotlyJSONEncoder)
         return render_template(
             'search.html',
-            graph_onload=graph_onload
+            graph_onload=graph_onload,
+            search_addr='null',
+            risk_level='null',
+            radius_miles='null'
         )
 
     if request_type_str == 'POST':
-
         import plotly.graph_objects as go
         from geopy.geocoders import Nominatim
         geolocator = Nominatim(user_agent="parkomfort-search")
 
         search_addr = request.form['search_addr']
-        title = 'Parking meters near ' + search_addr
+        risk_level = request.form['risk_level']
+        radius_miles = request.form['radius_miles']
+        radius_meters = int(radius_miles) * 1609.34
+
+        title = 'Parking meters near ' + search_addr + ' with risk level of ' + risk_level
         # search_addr = "175 5th Avenue NYC"
         location = geolocator.geocode(search_addr)
 
@@ -297,60 +310,71 @@ def go():
         # lat, lon = floats_string_to_arr(lat_lon)
         # lat, lon = 40.730948, -73.993291
 
-        nearby = find_nearby(df, lat, lon, convert_radius(100000))
-        closest = find_closest(nearby, lat, lon)
 
+        nearby = find_nearby(df, lat, lon, radius_meters, exclude=int(risk_level))
 
-        fig = go.Figure()
+        if nearby.shape[0]>0:
+            closest = find_closest(nearby, lat, lon)
 
-        fig.add_trace(go.Scattermapbox(
-            lat=closest.LAT,
-            lon=closest.LONG,
-            mode='markers',
-            marker=go.scattermapbox.Marker(
-                size=8,
-                color='rgb(255, 0, 0)',
-                opacity=0.7
-            ),
-            text=closest.Addr,
-            hoverinfo='text'
-        ))
+            fig = go.Figure()
 
-        fig.add_trace(go.Scattermapbox(
-            lat=[lat],
-            lon=[lon],
-            mode='markers',
-            marker=go.scattermapbox.Marker(
-                size=17,
-                color='rgb(242, 177, 172)',
-                opacity=0.7
-            ),
-            hoverinfo='none'
-        ))
-
-        fig.update_layout(
-            title=title,
-            autosize=True,
-            hovermode='closest',
-            showlegend=False,
-            mapbox=dict(
-                accesstoken=mapbox_access_token,
-                bearing=0,
-                center=dict(
-                    lat=lat,
-                    lon=lon
+            fig.add_trace(go.Scattermapbox(
+                lat=closest.LAT,
+                lon=closest.LONG,
+                mode='markers',
+                marker=go.scattermapbox.Marker(
+                    size=8,
+                    color='rgb(255, 0, 0)',
+                    opacity=0.7
                 ),
-                pitch=0,
-                zoom=15,
-                style='light'
-            ),
-        )
+                text=closest.Addr,
+                hoverinfo='text'
+            ))
 
-        graph_closest = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-        return render_template(
-            'search.html',
-            graph_closest=graph_closest
-        )
+            fig.add_trace(go.Scattermapbox(
+                lat=[lat],
+                lon=[lon],
+                mode='markers',
+                marker=go.scattermapbox.Marker(
+                    size=17,
+                    color='rgb(242, 177, 172)',
+                    opacity=0.7
+                ),
+                hoverinfo='none'
+            ))
+
+            fig.update_layout(
+                # title=title,
+                autosize=False,
+                width=700,
+                height=700,
+                hovermode='closest',
+                showlegend=False,
+                mapbox=dict(
+                    accesstoken=mapbox_access_token,
+                    bearing=0,
+                    center=dict(
+                        lat=lat,
+                        lon=lon
+                    ),
+                    pitch=0,
+                    zoom=15,
+                    style='light'
+                ),
+            )
+
+            graph_closest = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            return render_template(
+                'search.html',
+                graph_closest=graph_closest,
+                search_addr=search_addr,
+                risk_level=risk_level,
+                radius_miles=radius_miles
+            )
+        else:
+
+
+
 
 
 # meter calc
@@ -373,12 +397,13 @@ def calculate_distance(row, lat, lon):
     return math.sqrt(lat ** 2 + lon ** 2)
 
 
-def find_nearby(df, lat, lon, radius, exclude=1):
+def find_nearby(df, lat, lon, radius_meters, exclude=4):
+    radius = convert_radius(radius_meters)
     left = lon - radius
     right = lon + radius
     down = lat - radius
     up = lat + radius
-    df = df[(df.LONG > left) & (df.LONG < right) & (df.LAT < up) & (df.LAT > down) & (df.risk_factor<=exclude)]
+    df = df[(df.LONG > left) & (df.LONG < right) & (df.LAT < up) & (df.LAT > down) & (df.risk_factor <= exclude)]
     return df
 
 
