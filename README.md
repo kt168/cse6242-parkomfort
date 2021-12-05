@@ -3,7 +3,7 @@ CSE 6242 Project - Fall 2021
 
 
 ## DESCRIPTION
-This package contains the flask web app for ParKomfort, Jupyter notebooks/python scripts for data analyses/data wrangling, as well as aggregated/cleaned datasets.
+This package contains the flask web app for ParKomfort, Jupyter notebooks/python scripts for data analyses/data wrangling (in `utils` folder), as well as aggregated/cleaned datasets (in `data` folder).
 
 
 ## INSTALLATION
